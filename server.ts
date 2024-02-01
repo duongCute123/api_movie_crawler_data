@@ -11,9 +11,8 @@ app.use('/', cors(), v1);
 app.use('/v2', v2);
 app.get('/', (req, res) => {
   res.json({
-    Github: 'https://github.com/pth-1641/Comics-API',
-    Issues: 'https://github.com/pth-1641/Comics-API/issues',
-    'Official Website': 'https://ncomics.onrender.com',
+    Github: 'https://github.com/duongCute123',
+    'Official Website': 'https://webcomics-platforms.vercel.app/',
   });
 });
 
