@@ -8,7 +8,7 @@ class ComicsApi {
   private agent: string;
 
   constructor() {
-    this.domain = 'https://nettruyenx.com';
+    this.domain = 'https://nettruyenviet.com';
     this.agent = userAgent.getRandom();
   }
 
