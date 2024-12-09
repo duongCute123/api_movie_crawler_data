@@ -8,13 +8,13 @@ const PORT = process.env.PORT || 8080;
 
 // Versions
 app.use('/', cors(), v1);
-app.use('/v2', v2);
-app.get('/', (req, res) => {
-  res.json({
-    Github: 'https://github.com/duongCute123',
-    'Official Website': 'https://webcomics-platforms.vercel.app/',
-  });
-});
+app.use(
+  '/v2',
+  cors({
+    origin: ['https://webcomics-platforms.vercel.app'],
+  }),
+  v2
+);
 
 // Handle 404
 app.use((req, res) => {
@@ -23,9 +23,7 @@ app.use((req, res) => {
     message: 'Not Found',
   });
 });
-app.use("/hello",function (req,res) {
-  res.json("hello spring")
-})
+
 // @ts-ignore
 app.use((err, req, res, next) => {
   const status = +(err.message.match(/\d+/) || 500);
