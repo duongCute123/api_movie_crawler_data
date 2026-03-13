@@ -398,7 +398,7 @@ router.get('/images', function (req, res) { return __awaiter(void 0, void 0, voi
                 return [4 /*yield*/, axios_1.default.get(src, {
                         responseType: 'stream',
                         headers: {
-                            referer: 'https://www.nettruyen.com',
+                            referer: 'https://nettruyenar.com',
                             'User-Agent': random_useragent_1.default.getRandom(),
                         },
                     })];

@@ -51,7 +51,7 @@ var cheerio_1 = require("cheerio");
 var random_useragent_1 = require("random-useragent");
 var ComicsApi = /** @class */ (function () {
     function ComicsApi() {
-        this.domain = 'https://www.nettruyen.com';
+        this.domain = 'https://nettruyenar.com';
         this.agent = random_useragent_1.default.getRandom();
     }
     ComicsApi.prototype.createRequest = function (path) {
