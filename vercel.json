@@ -2,5 +2,8 @@
   "version": 2,
   "name": "comic-api",
   "builds": [{ "src": "/server.ts", "use": "@vercel/node" }],
-  "routes": [{ "src": "/(.*)", "dest": "/server.ts" }]
+  "routes": [{ "src": "/(.*)", "dest": "/server.ts" }],
+  "engines": {
+    "node": "24.x"
+  }
 }
