@@ -40,13 +40,16 @@ class ComicsApi {
       const domain = this.domain.replace(/\/+$/, '');
       const fullPath = path ? `/${path}` : '/';
       const url = `${domain}${fullPath}`.replace(/\/+/g, '/').replace(/\?+/g, '?');
+      console.log(`[DEBUG] Request URL: ${url}, Domain: ${this.domain}`);
       const { data } = await axios.get(url, {
         headers: {
           'User-Agent': this.agent,
         },
+        timeout: 30000,
       });
       return load(data);
     } catch (err: any) {
+      console.log(`[DEBUG] Error: ${err.message}`);
       throw err;
     }
   }
