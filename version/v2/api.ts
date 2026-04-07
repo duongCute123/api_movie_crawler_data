@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import { Comics } from '.';
 import * as userAgent from 'random-useragent';
@@ -9,40 +9,49 @@ const router = express.Router();
 
 const allStatus = ['all', 'completed', 'ongoing'];
 
-// Genres
-router.get('/genres', async (req, res) => {
-  res.send(await Comics.getGenres());
-});
+// Async handler wrapper to catch errors
+const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => 
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 
-router.get('/genres/:slug', async (req, res) => {
+// Genres
+router.get('/genres', asyncHandler(async (req, res) => {
+  const data = await Comics.getGenres();
+  res.json(data);
+}));
+
+router.get('/genres/:slug', asyncHandler(async (req, res) => {
   const { params, query } = req;
-  const slug = params.slug;
-  const page = query.page ? Number(query.page) : 1;
-  const status = query.status ? query.status : 'all';
-  //@ts-ignore
-  if (!allStatus.includes(status)) throw Error('Invalid status');
-  //@ts-ignore
-  res.send(await Comics.getComicsByGenre(slug, page, status));
-});
+  const slug = String(params.slug || '');
+  const page = Number(query.page) || 1;
+  const status = String(query.status || 'all');
+  if (!allStatus.includes(status)) {
+    return res.status(400).json({ status: 400, message: 'Invalid status' });
+  }
+  const data = await Comics.getComicsByGenre(slug, page, status as any);
+  res.json(data);
+}));
 
 // New Comics
-router.get(`/new-comics`, async (req, res) => {
+router.get(`/new-comics`, asyncHandler(async (req, res) => {
   const { query } = req;
-  const status = query.status ? query.status : 'all';
-  const page = query.page ? Number(query.page) : 1;
-  //@ts-ignore
-  if (!allStatus.includes(status)) throw Error('Invalid status');
-  // @ts-ignore
-  res.json(await Comics.getNewComics(status, page));
-});
+  const status = (query.status as string) || 'all';
+  const page = Number(query.page) || 1;
+  if (!allStatus.includes(status)) {
+    return res.status(400).json({ status: 400, message: 'Invalid status' });
+  }
+  const data = await Comics.getNewComics(status as any, page);
+  res.json(data);
+}));
 
 // Recommend Comics
-router.get(`/recommend-comics`, async (req, res) => {
+router.get(`/recommend-comics`, asyncHandler(async (req, res) => {
   const { query } = req;
-  const type = query.type ? query.type : 'hot';
-  // @ts-ignore
-  res.json(await Comics.getRecommendComics(type));
-});
+  const type = (query.type as string) || 'hot';
+  const data = await Comics.getRecommendComics(type as any);
+  res.json(data);
+}));
 
 // Search
 const searchApiPaths = [
@@ -57,14 +66,16 @@ const searchApiPaths = [
 ];
 
 searchApiPaths.forEach(({ path, callback }) => {
-  router.get(path, async (req, res) => {
+  router.get(path, asyncHandler(async (req, res) => {
     const { query } = req;
-    const q = query.q ? query.q : '';
-    if (!q) throw Error('Invalid query');
-    const page = query.page ? Number(query.page) : 1;
-    //@ts-ignore
-    res.send(await callback(q, page));
-  });
+    const q = String(query.q || '');
+    if (!q) {
+      return res.status(400).json({ status: 400, message: 'Invalid query' });
+    }
+    const page = Number(query.page) || 1;
+    const data = await callback(q, page);
+    res.json(data);
+  }));
 });
 
 // Page params
@@ -92,11 +103,12 @@ const pageParamsApiPaths = [
 ];
 
 pageParamsApiPaths.forEach(({ path, callback }) => {
-  router.get(path, async (req, res) => {
+  router.get(path, asyncHandler(async (req, res) => {
     const { query } = req;
-    const page = query.page ? Number(query.page) : 1;
-    res.json(await callback(page));
-  });
+    const page = Number(query.page) || 1;
+    const data = await callback(page);
+    res.json(data);
+  }));
 });
 
 // Comics
@@ -116,30 +128,38 @@ const comicIdParamsApiPaths = [
 ];
 
 comicIdParamsApiPaths.forEach(({ path, callback }) => {
-  router.get(path, async (req, res) => {
+  router.get(path, asyncHandler(async (req, res) => {
     const { params } = req;
-    const slug = params.slug;
-    if (!slug) throw Error('Invalid');
-    res.json(await callback(slug));
-  });
+    const slug = String(params.slug || '');
+    if (!slug) {
+      return res.status(400).json({ status: 400, message: 'Invalid slug' });
+    }
+    const data = await callback(slug);
+    res.json(data);
+  }));
 });
 
-router.get('/comics/:slug/chapters/:chapter_id', async (req, res) => {
+router.get('/comics/:slug/chapters/:chapter_id', asyncHandler(async (req, res) => {
   const { params } = req;
-  const slug = params.slug;
+  const slug = String(params.slug || '');
   const chapter_id = params.chapter_id ? Number(params.chapter_id) : null;
-  if (!slug || !chapter_id) throw Error('Invalid');
-  res.json(await Comics.getChapter(slug, chapter_id));
-});
+  if (!slug || !chapter_id) {
+    return res.status(400).json({ status: 400, message: 'Invalid parameters' });
+  }
+  const data = await Comics.getChapter(slug, chapter_id);
+  res.json(data);
+}));
 
-router.get('/comics/:slug/comments', async (req, res) => {
+router.get('/comics/:slug/comments', asyncHandler(async (req, res) => {
   const { params, query } = req;
-  const slug = params.slug;
-  const page = query.page ? Number(query.page) : 1;
-  // @ts-ignore
-  if (!slug) throw Error('Invalid Comic ID');
-  res.json(await Comics.getComments(slug, page));
-});
+  const slug = String(params.slug || '');
+  const page = Number(query.page) || 1;
+  if (!slug) {
+    return res.status(400).json({ status: 400, message: 'Invalid slug' });
+  }
+  const data = await Comics.getComments(slug, page);
+  res.json(data);
+}));
 
 // Top Comics
 const topComicsApiPaths = [
@@ -174,29 +194,34 @@ const topComicsApiPaths = [
 ];
 
 topComicsApiPaths.forEach(({ path, callback }) => {
-  router.get(`/top${path}`, async (req, res) => {
+  router.get(`/top${path}`, asyncHandler(async (req, res) => {
     const { query } = req;
-    const status = query.status ? query.status : 'all';
-    // @ts-ignore
-    const page = query.page ? Number(query.page) : 1;
-    res.json(await callback(status, page));
-  });
+    const status = String(query.status || 'all');
+    const page = Number(query.page) || 1;
+    const data = await callback(status, page);
+    res.json(data);
+  }));
 });
 
-router.get('/images', async (req: any, res: any) => {
+router.get('/images', asyncHandler(async (req, res) => {
+  const { src } = req.query;
+  if (!src) {
+    return res.status(400).json({ status: 400, message: 'Missing src parameter' });
+  }
   try {
-    const { src } = req.query;
-    const response = await axios.get(src, {
+    const response = await axios.get(String(src), {
       responseType: 'stream',
       headers: {
-        referer: process.env.NETTRUYEN_BASE_URL,
+        referer: process.env.NETTRUYEN_BASE_URL || 'https://nettruyenar.com/',
         'User-Agent': userAgent.getRandom(),
       },
+      timeout: 15000,
     });
     response.data.pipe(res);
-  } catch (err) {
-    throw err;
+  } catch (err: any) {
+    console.error('Images proxy error:', err.message);
+    res.status(502).json({ status: 502, message: 'Failed to fetch image' });
   }
-});
+}));
 
 export default router;

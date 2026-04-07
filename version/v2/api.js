@@ -42,39 +42,44 @@ const userAgent = __importStar(require("random-useragent"));
 console.log('v2 API router loaded');
 const router = express_1.default.Router();
 const allStatus = ['all', 'completed', 'ongoing'];
+// Async handler wrapper to catch errors
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
 // Genres
-router.get('/genres', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.send(yield _1.Comics.getGenres());
-}));
-router.get('/genres/:slug', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/genres', asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield _1.Comics.getGenres();
+    res.json(data);
+})));
+router.get('/genres/:slug', asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { params, query } = req;
-    const slug = params.slug;
-    const page = query.page ? Number(query.page) : 1;
-    const status = query.status ? query.status : 'all';
-    //@ts-ignore
-    if (!allStatus.includes(status))
-        throw Error('Invalid status');
-    //@ts-ignore
-    res.send(yield _1.Comics.getComicsByGenre(slug, page, status));
-}));
+    const slug = String(params.slug || '');
+    const page = Number(query.page) || 1;
+    const status = String(query.status || 'all');
+    if (!allStatus.includes(status)) {
+        return res.status(400).json({ status: 400, message: 'Invalid status' });
+    }
+    const data = yield _1.Comics.getComicsByGenre(slug, page, status);
+    res.json(data);
+})));
 // New Comics
-router.get(`/new-comics`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get(`/new-comics`, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { query } = req;
-    const status = query.status ? query.status : 'all';
-    const page = query.page ? Number(query.page) : 1;
-    //@ts-ignore
-    if (!allStatus.includes(status))
-        throw Error('Invalid status');
-    // @ts-ignore
-    res.json(yield _1.Comics.getNewComics(status, page));
-}));
+    const status = query.status || 'all';
+    const page = Number(query.page) || 1;
+    if (!allStatus.includes(status)) {
+        return res.status(400).json({ status: 400, message: 'Invalid status' });
+    }
+    const data = yield _1.Comics.getNewComics(status, page);
+    res.json(data);
+})));
 // Recommend Comics
-router.get(`/recommend-comics`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get(`/recommend-comics`, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { query } = req;
-    const type = query.type ? query.type : 'hot';
-    // @ts-ignore
-    res.json(yield _1.Comics.getRecommendComics(type));
-}));
+    const type = query.type || 'hot';
+    const data = yield _1.Comics.getRecommendComics(type);
+    res.json(data);
+})));
 // Search
 const searchApiPaths = [
     {
@@ -87,15 +92,16 @@ const searchApiPaths = [
     },
 ];
 searchApiPaths.forEach(({ path, callback }) => {
-    router.get(path, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.get(path, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { query } = req;
-        const q = query.q ? query.q : '';
-        if (!q)
-            throw Error('Invalid query');
-        const page = query.page ? Number(query.page) : 1;
-        //@ts-ignore
-        res.send(yield callback(q, page));
-    }));
+        const q = String(query.q || '');
+        if (!q) {
+            return res.status(400).json({ status: 400, message: 'Invalid query' });
+        }
+        const page = Number(query.page) || 1;
+        const data = yield callback(q, page);
+        res.json(data);
+    })));
 });
 // Page params
 const pageParamsApiPaths = [
@@ -121,11 +127,12 @@ const pageParamsApiPaths = [
     },
 ];
 pageParamsApiPaths.forEach(({ path, callback }) => {
-    router.get(path, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.get(path, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { query } = req;
-        const page = query.page ? Number(query.page) : 1;
-        res.json(yield callback(page));
-    }));
+        const page = Number(query.page) || 1;
+        const data = yield callback(page);
+        res.json(data);
+    })));
 });
 // Comics
 const comicIdParamsApiPaths = [
@@ -143,31 +150,36 @@ const comicIdParamsApiPaths = [
     },
 ];
 comicIdParamsApiPaths.forEach(({ path, callback }) => {
-    router.get(path, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.get(path, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { params } = req;
-        const slug = params.slug;
-        if (!slug)
-            throw Error('Invalid');
-        res.json(yield callback(slug));
-    }));
+        const slug = String(params.slug || '');
+        if (!slug) {
+            return res.status(400).json({ status: 400, message: 'Invalid slug' });
+        }
+        const data = yield callback(slug);
+        res.json(data);
+    })));
 });
-router.get('/comics/:slug/chapters/:chapter_id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/comics/:slug/chapters/:chapter_id', asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { params } = req;
-    const slug = params.slug;
+    const slug = String(params.slug || '');
     const chapter_id = params.chapter_id ? Number(params.chapter_id) : null;
-    if (!slug || !chapter_id)
-        throw Error('Invalid');
-    res.json(yield _1.Comics.getChapter(slug, chapter_id));
-}));
-router.get('/comics/:slug/comments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!slug || !chapter_id) {
+        return res.status(400).json({ status: 400, message: 'Invalid parameters' });
+    }
+    const data = yield _1.Comics.getChapter(slug, chapter_id);
+    res.json(data);
+})));
+router.get('/comics/:slug/comments', asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { params, query } = req;
-    const slug = params.slug;
-    const page = query.page ? Number(query.page) : 1;
-    // @ts-ignore
-    if (!slug)
-        throw Error('Invalid Comic ID');
-    res.json(yield _1.Comics.getComments(slug, page));
-}));
+    const slug = String(params.slug || '');
+    const page = Number(query.page) || 1;
+    if (!slug) {
+        return res.status(400).json({ status: 400, message: 'Invalid slug' });
+    }
+    const data = yield _1.Comics.getComments(slug, page);
+    res.json(data);
+})));
 // Top Comics
 const topComicsApiPaths = [
     {
@@ -200,28 +212,33 @@ const topComicsApiPaths = [
     },
 ];
 topComicsApiPaths.forEach(({ path, callback }) => {
-    router.get(`/top${path}`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    router.get(`/top${path}`, asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { query } = req;
-        const status = query.status ? query.status : 'all';
-        // @ts-ignore
-        const page = query.page ? Number(query.page) : 1;
-        res.json(yield callback(status, page));
-    }));
+        const status = String(query.status || 'all');
+        const page = Number(query.page) || 1;
+        const data = yield callback(status, page);
+        res.json(data);
+    })));
 });
-router.get('/images', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/images', asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { src } = req.query;
+    if (!src) {
+        return res.status(400).json({ status: 400, message: 'Missing src parameter' });
+    }
     try {
-        const { src } = req.query;
-        const response = yield axios_1.default.get(src, {
+        const response = yield axios_1.default.get(String(src), {
             responseType: 'stream',
             headers: {
-                referer: process.env.NETTRUYEN_BASE_URL,
+                referer: process.env.NETTRUYEN_BASE_URL || 'https://nettruyenar.com/',
                 'User-Agent': userAgent.getRandom(),
             },
+            timeout: 15000,
         });
         response.data.pipe(res);
     }
     catch (err) {
-        throw err;
+        console.error('Images proxy error:', err.message);
+        res.status(502).json({ status: 502, message: 'Failed to fetch image' });
     }
-}));
+})));
 exports.default = router;
