@@ -44,6 +44,7 @@ class ComicsApi {
     constructor() {
         this.CACHE_TTL = 5 * 60 * 1000; // 5 minutes
         this.domain = process.env.NETTRUYEN_BASE_URL;
+        console.log('[ComicsApi] Domain:', this.domain);
         this.agent = userAgent.getRandom();
         this.cache = new Map();
     }

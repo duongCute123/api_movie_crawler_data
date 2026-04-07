@@ -18,6 +18,7 @@ class ComicsApi {
 
   constructor() {
     this.domain = process.env.NETTRUYEN_BASE_URL as string;
+    console.log('[ComicsApi] Domain:', this.domain);
     this.agent = userAgent.getRandom();
     this.cache = new Map();
   }
