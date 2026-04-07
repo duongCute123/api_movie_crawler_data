@@ -1,53 +1,84 @@
 import express from 'express';
 import v2 from './version/v2/api';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-console.log('NETTRUYEN_BASE_URL:', process.env.NETTRUYEN_BASE_URL);
-console.log('PORT:', PORT);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// quick health route
+console.log('Environment:');
+console.log('  NETTRUYEN_BASE_URL:', process.env.NETTRUYEN_BASE_URL || 'NOT SET');
+console.log('  PORT:', PORT);
+
+// Health check - no dependencies
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    env: {
+      hasNettruyenUrl: !!process.env.NETTRUYEN_BASE_URL
+    }
+  });
+});
+
 app.get('/v2/hello', (req, res) => {
   res.json({ ok: true, message: 'v2 hello' });
 });
 
-// Version v2 only
-app.use(
-  '/v2',
-  cors({
-    origin: ['https://webcomics-platforms.vercel.app'],
-  }),
-  v2
-);
+// CORS middleware
+app.use('/v2', cors({
+  origin: ['https://webcomics-platforms.vercel.app', 'http://localhost:3000', 'http://localhost:8080'],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}), v2);
 
-console.log('V2 router paths:', v2.stack
+console.log('V2 router loaded, paths:', v2.stack
   .filter((layer: any) => layer.route)
   .map((layer: any) => layer.route.path)
 );
 
-// Handle 404
+// 404 handler
 app.use((req, res) => {
-  res.json({
+  res.status(404).json({
     status: 404,
-    message: 'Not Found',
+    message: 'Route not found',
+    path: req.path
   });
 });
 
-// @ts-ignore
-app.use((err, req, res, next) => {
-  const status = +(err.message.match(/\d+/) || 500);
+// Error handler - must have 4 parameters
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
+  
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || 'Internal server error';
+  
   res.status(status).json({
     status,
-    message: err.message,
+    message: process.env.NODE_ENV === 'production' && status === 500 
+      ? 'Internal server error' 
+      : message
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
 
-export = app;
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, closing server...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+export default app;
