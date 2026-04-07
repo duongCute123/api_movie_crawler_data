@@ -6,22 +6,6 @@
   "engines": {
     "node": "24.x"
   },
-  "repository": {
-    "url": "https://github.com/pth-1641/Comics-API",
-    "type": "git"
-  },
-  "homepage": "https://github.com/pth-1641/Comics-API",
-  "keywords": [
-    "api",
-    "comics",
-    "comics-api",
-    "scaping"
-  ],
-  "author": {
-    "name": "pth-1641",
-    "email": "pth16042001@gmail.com"
-  },
-  "license": "MIT",
   "scripts": {
     "dev": "nodemon ./server.ts",
     "dev:win": "cls && nodemon ./server.ts",
