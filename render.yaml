@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm install && npm run build",
+  "startCommand": "node server.js",
+  "env": {
+    "NODE_VERSION": "22"
+  },
+  "postInstallCommand": "rm -f package-lock.json yarn.lock"
+}

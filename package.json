@@ -10,6 +10,7 @@
     "dev": "nodemon ./server.ts",
     "dev:win": "cls && nodemon ./server.ts",
     "build": "tsc",
+    "start": "node server.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {
