@@ -3,13 +3,35 @@ import { load } from "cheerio";
 import * as userAgent from "random-useragent";
 
 type Status = "all" | "completed" | "ongoing";
+
+interface CacheItem {
+  data: any;
+  timestamp: number;
+}
+
 class ComicsApi {
   private domain: string;
   private agent: string;
+  private cache: Map<string, CacheItem>;
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
     this.domain = process.env.NETTRUYEN_BASE_URL as string;
     this.agent = userAgent.getRandom();
+    this.cache = new Map();
+  }
+
+  private getCached(key: string): any | null {
+    const item = this.cache.get(key);
+    if (item && Date.now() - item.timestamp < this.CACHE_TTL) {
+      return item.data;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private setCache(key: string, data: any): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
   }
 
   private async createRequest(path: string): Promise<any> {
@@ -187,6 +209,10 @@ class ComicsApi {
   }
 
   public async getGenres(): Promise<any> {
+    const cacheKey = "genres";
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+    
     try {
       const $ = await this.createRequest("");
       const genres = Array.from($("#mainNav .clearfix li a")).map((item) => {
@@ -195,6 +221,7 @@ class ComicsApi {
         const description = $(item).attr("data-title");
         return { id: id === "tim-truyen" ? "all" : id, name, description };
       });
+      this.setCache(cacheKey, genres);
       return genres;
     } catch (err) {
       throw err;
@@ -547,6 +574,10 @@ class ComicsApi {
   }
 
   public async getSearchSuggest(query: string): Promise<any> {
+    const cacheKey = `search-suggest:${query}`;
+    const cached = this.getCached(cacheKey);
+    if (cached) return cached;
+
     try {
       query = query.trim();
       if (!query) throw Error("Invalid query");
@@ -573,6 +604,7 @@ class ComicsApi {
           authors: authors === "Updating" ? authors : authors.split(" - "),
         };
       });
+      this.setCache(cacheKey, suggestions);
       return suggestions;
     } catch (err) {
       throw err;
