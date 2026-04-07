@@ -2,8 +2,13 @@ import express from 'express';
 import v2 from './version/v2/api';
 import cors from 'cors';
 
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+console.log('NETTRUYEN_BASE_URL:', process.env.NETTRUYEN_BASE_URL);
+console.log('PORT:', PORT);
 
 // quick health route
 app.get('/v2/hello', (req, res) => {

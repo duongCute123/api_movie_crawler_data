@@ -5,8 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const api_1 = __importDefault(require("./version/v2/api"));
 const cors_1 = __importDefault(require("cors"));
+require('dotenv').config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8080;
+console.log('NETTRUYEN_BASE_URL:', process.env.NETTRUYEN_BASE_URL);
+console.log('PORT:', PORT);
 // quick health route
 app.get('/v2/hello', (req, res) => {
     res.json({ ok: true, message: 'v2 hello' });
