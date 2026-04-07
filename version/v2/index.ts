@@ -1,6 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
 import * as userAgent from "random-useragent";
+import genresData from "./genres.json";
 
 type Status = "all" | "completed" | "ongoing";
 
@@ -209,23 +210,7 @@ class ComicsApi {
   }
 
   public async getGenres(): Promise<any> {
-    const cacheKey = "genres";
-    const cached = this.getCached(cacheKey);
-    if (cached) return cached;
-    
-    try {
-      const $ = await this.createRequest("");
-      const genres = Array.from($("#mainNav .clearfix li a")).map((item) => {
-        const id = this.getGenreId($(item).attr("href"));
-        const name = this.trim($(item).text());
-        const description = $(item).attr("data-title");
-        return { id: id === "tim-truyen" ? "all" : id, name, description };
-      });
-      this.setCache(cacheKey, genres);
-      return genres;
-    } catch (err) {
-      throw err;
-    }
+    return genresData;
   }
 
   public async getRecommendComics(
