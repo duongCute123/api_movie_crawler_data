@@ -1,6 +1,6 @@
 import axios from "axios";
 import { load } from "cheerio";
-import userAgent from "random-useragent";
+import * as userAgent from "random-useragent";
 
 type Status = "all" | "completed" | "ongoing";
 class ComicsApi {
@@ -13,18 +13,6 @@ class ComicsApi {
   }
 
   private async createRequest(path: string): Promise<any> {
-    try {
-      const { data } = await axios.request({
-        method: "GET",
-        url: `${this.domain}/${path}`.replace(/\?+/g, "?"),
-        headers: {
-          "User-Agent": this.agent,
-        },
-      });
-      return load(data);
-    } catch (err) {
-      throw err;
-    }
   }
 
   private getComicId(link?: string): string | undefined {
@@ -91,7 +79,7 @@ class ComicsApi {
         return { status: 404, message: "Page not found" };
       }
       const comics = Array.from($("#ctl00_divCenter .item")).map((item) => {
-        const thumbnail = $(".image img", item).attr("data-original");
+        const thumbnail = $(".image img", item).attr("data-original")?.replace(/^https:/, "");
         const title = this.trim($("figcaption h3", item).text());
         const id = this.getComicId($("a", item).attr("href"));
         const is_trending = !!$(".icon-hot", item).toString();
@@ -225,7 +213,7 @@ class ComicsApi {
     const comics = Array.from($("#ctl00_divAlt1 div.item")).map((item) => {
       const id = this.getComicId($("a", item).attr("href"));
       const title = $("a", item).attr("title");
-      const thumbnail = $("img", item).attr("data-original");
+      const thumbnail = $("img", item).attr("data-original")?.replace(/^https:/, "");
       const updated_at = this.trim($(".time", item).text());
       const chapter_id = Number(
         $(".slide-caption > a", item).attr("href").split("-").at(-1)

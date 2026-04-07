@@ -52,7 +52,7 @@ var random_useragent_1 = require("random-useragent");
 var ComicsApi = /** @class */ (function () {
     function ComicsApi() {
         this.domain = 'https://nettruyenar.com';
-        this.agent = random_useragent_1.default.getRandom();
+        this.agent = random_useragent_1.getRandom();
     }
     ComicsApi.prototype.createRequest = function (path) {
         return __awaiter(this, void 0, void 0, function () {
@@ -144,7 +144,7 @@ var ComicsApi = /** @class */ (function () {
                             return [2 /*return*/, { status: 404, message: 'Page not found' }];
                         }
                         comics = Array.from($_1('#ctl00_divCenter .item')).map(function (item) {
-                            var thumbnail = 'https:' + $_1('.image img', item).attr('data-original');
+                            var thumbnail = $_1('.image img', item).attr('data-original');
                             var title = _this.trim($_1('figcaption h3', item).text());
                             var id = _this.getComicId($_1('a', item).attr('href'));
                             var is_trending = !!$_1('.icon-hot', item).toString();
@@ -299,7 +299,7 @@ var ComicsApi = /** @class */ (function () {
                         comics = Array.from($('#ctl00_divAlt1 div.item')).map(function (item) {
                             var id = _this.getComicId($('a', item).attr('href'));
                             var title = $('a', item).attr('title');
-                            var thumbnail = 'https:' + $('img', item).attr('data-src');
+                            var thumbnail = $('img', item).attr('data-src');
                             var updated_at = _this.trim($('.time', item).text());
                             var chapter_id = Number($('.slide-caption > a', item).attr('href').split('/').at(-1));
                             var name = $('.slide-caption > a', item).text();
@@ -614,7 +614,7 @@ var ComicsApi = /** @class */ (function () {
                     case 1:
                         _a = _b.sent(), $_3 = _a[0], chapters = _a[1];
                         title = $_3('.title-detail').text();
-                        thumbnail = 'https:' + $_3('#item-detail .col-image img').attr('src');
+                        thumbnail = $_3('#item-detail .col-image img').attr('src');
                         description = $_3('.detail-content p')
                             .text()
                             .replace(/\n/g, ' ')
@@ -769,7 +769,7 @@ var ComicsApi = /** @class */ (function () {
                             return [2 /*return*/, { status: 400, message: 'Invalid page' }];
                         }
                         comments = Array.from($_5('.clearfix')).map(function (item) {
-                            var avatar = 'https:' + $_5('.avatar img', item).attr('src');
+                            var avatar = $_5('.avatar img', item).attr('src');
                             var username = $_5(item).find('.authorname').first().text().trim();
                             var content = $_5('.comment-content', item).first().text().trim();
                             var vote_count = $_5('.comment-footer .vote-up-count', item)
@@ -784,7 +784,7 @@ var ComicsApi = /** @class */ (function () {
                                 .first()
                                 .attr('title');
                             var replies = Array.from($_5('.item', item)).map(function (reply) {
-                                var avatar = 'https:' + $_5('.avatar img', reply).attr('src');
+                                var avatar = $_5('.avatar img', reply).attr('src');
                                 var username = $_5('.authorname', reply).text().trim();
                                 var content = $_5('.comment-content', reply)
                                     .clone()
@@ -847,7 +847,7 @@ var ComicsApi = /** @class */ (function () {
                         $_6 = (0, cheerio_1.load)(data);
                         suggestions = Array.from($_6('li')).map(function (comic) {
                             var id = _this.getComicId($_6('a', comic).attr('href'));
-                            var thumbnail = 'https:' + $_6('img', comic).attr('src');
+                            var thumbnail = $_6('img', comic).attr('src');
                             var title = $_6('h3', comic).text();
                             var lastest_chapter = $_6('i', comic).first().text();
                             var genres = $_6('i', comic).last().text();

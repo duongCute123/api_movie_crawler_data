@@ -42,15 +42,15 @@ var axios_1 = require("axios");
 var dotenv_1 = require("dotenv");
 var https_1 = require("https");
 var random_useragent_1 = require("random-useragent");
-dotenv_1.default.config();
-var agent = new https_1.default.Agent({
+dotenv_1.config();
+var agent = new https_1.Agent({
     rejectUnauthorized: false,
 });
 var ComicsApi = /** @class */ (function () {
     function ComicsApi() {
         var _a;
         this.hosts = (_a = process.env.HOSTS) === null || _a === void 0 ? void 0 : _a.split(' | ');
-        this.agent = random_useragent_1.default.getRandom();
+        this.agent = random_useragent_1.getRandom();
     }
     ComicsApi.prototype.createRequest = function (path, host) {
         if (host === void 0) { host = 1; }

@@ -41,7 +41,7 @@ var axios_1 = require("axios");
 var _1 = require(".");
 var random_useragent_1 = require("random-useragent");
 var allStatus = ['all', 'completed', 'ongoing'];
-var router = express_1.default.Router();
+var router = express_1.Router();
 // Genres
 router.get('/genres', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, _b;

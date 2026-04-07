@@ -40,7 +40,7 @@ var express_1 = require("express");
 var axios_1 = require("axios");
 var _1 = require(".");
 var random_useragent_1 = require("random-useragent");
-var router = express_1.default.Router();
+var router = express_1.Router();
 var allStatus = ['all', 'completed', 'ongoing'];
 // Genres
 router.get('/genres', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -399,7 +399,7 @@ router.get('/images', function (req, res) { return __awaiter(void 0, void 0, voi
                         responseType: 'stream',
                         headers: {
                             referer: 'https://nettruyenar.com',
-                            'User-Agent': random_useragent_1.default.getRandom(),
+                            'User-Agent': random_useragent_1.getRandom(),
                         },
                     })];
             case 1:

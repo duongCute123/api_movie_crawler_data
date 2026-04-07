@@ -1,7 +1,9 @@
 import express from 'express';
 import axios from 'axios';
 import { Comics } from '.';
-import userAgent from 'random-useragent';
+import * as userAgent from 'random-useragent';
+
+console.log('v2 API router loaded');
 
 const router = express.Router();
 

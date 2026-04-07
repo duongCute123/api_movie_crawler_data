@@ -1,8 +1,8 @@
 import { load } from "cheerio";
 import axios from "axios";
-import dotenv from "dotenv";
-import https from "https";
-import userAgent from "random-useragent";
+import * as dotenv from "dotenv";
+import * as https from "https";
+import * as userAgent from "random-useragent";
 
 dotenv.config();
 
