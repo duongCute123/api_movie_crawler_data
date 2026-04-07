@@ -36,6 +36,19 @@ class ComicsApi {
   }
 
   private async createRequest(path: string): Promise<any> {
+    try {
+      const domain = this.domain.replace(/\/+$/, '');
+      const fullPath = path ? `/${path}` : '/';
+      const url = `${domain}${fullPath}`.replace(/\/+/g, '/').replace(/\?+/g, '?');
+      const { data } = await axios.get(url, {
+        headers: {
+          'User-Agent': this.agent,
+        },
+      });
+      return load(data);
+    } catch (err: any) {
+      throw err;
+    }
   }
 
   private getComicId(link?: string): string | undefined {
@@ -217,20 +230,20 @@ class ComicsApi {
     type: "hot" | "boy" | "girl" = "hot"
   ): Promise<any> {
     const keys = {
-      hot: "hot",
+      hot: "truyen-tranh-hot",
       boy: "truyen-con-trai",
       girl: "truyen-con-gai",
     };
     const $ = await this.createRequest(keys[type]);
-    const comics = Array.from($("#ctl00_divAlt1 div.item")).map((item) => {
-      const id = this.getComicId($("a", item).attr("href"));
-      const title = $("a", item).attr("title");
+    const comics = Array.from($("#ctl00_divAlt1 .owl-carousel .item")).map((item) => {
+      const href = $("a", item).attr("href") || "";
+      const id = this.getComicId(href);
+      const title = $("h3 a", item).text() || $("a", item).attr("title") || "";
       const thumbnail = $("img", item).attr("data-original")?.replace(/^https:/, "");
       const updated_at = this.trim($(".time", item).text());
-      const chapter_id = Number(
-        $(".slide-caption > a", item).attr("href").split("-").at(-1)
-      );
-      const name = $(".slide-caption > a", item).attr("title");
+      const chapterHref = $(".slide-caption > a", item).attr("href") || "";
+      const chapter_id = Number(chapterHref.split("/").pop()?.split("-").pop()) || 0;
+      const name = $(".slide-caption > a", item).attr("title") || "";
       return {
         id,
         title,
